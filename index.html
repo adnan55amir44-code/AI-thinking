@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Thinking | Final Stable Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff007a;
+            --neon-blue: #00d4ff;
+            --neon-green: #39ff14;
+            --neon-purple: #9d00ff;
+            --bg-black: #020205;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background: var(--bg-black);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated Mesh Background */
+        .bg-gradient {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(255, 0, 122, 0.1) 0%, transparent 35%),
+                radial-gradient(circle at 85% 85%, rgba(0, 212, 255, 0.1) 0%, transparent 35%);
+            z-index: -1;
+            animation: moveBg 10s ease infinite alternate;
+        }
+        @keyframes moveBg { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* --- Header --- */
+        header {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(25px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 100;
+        }
+
+        .logo-section { display: flex; align-items: center; gap: 12px; }
+        .brand { font-size: 1.3rem; font-weight: 800; background: linear-gradient(to right, var(--neon-blue), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .leaf-icon { color: var(--neon-green); font-size: 1.3rem; cursor: pointer; filter: drop-shadow(0 0 5px var(--neon-green)); transition: 0.3s; }
+        .leaf-icon:hover { transform: rotate(20deg) scale(1.2); }
+
+        /* Reactor Core Status */
+        .status-pill {
+            display: flex; align-items: center; gap: 8px; background: var(--glass);
+            padding: 5px 12px; border-radius: 50px; border: 1px solid var(--glass-border);
+        }
+        .core { width: 10px; height: 10px; border-radius: 50%; }
+        .active-core { background: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); animation: pulse 1.5s infinite; }
+        .idle-core { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); animation: jitter 0.2s infinite; }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes jitter { 0% { transform: translate(0); } 50% { transform: translate(1px, -1px); } 100% { transform: translate(0); } }
+
+        /* --- Project Tabs --- */
+        .project-tabs {
+            padding: 10px; display: flex; gap: 10px; overflow-x: auto; background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .tab {
+            padding: 8px 18px; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.3s;
+        }
+        .tab.active { background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); border: none; }
+
+        /* --- Chat Window --- */
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .msg-box { display: flex; flex-direction: column; max-width: 85%; animation: slideIn 0.4s ease; }
+        .u-align { align-self: flex-end; }
+        .a-align { align-self: flex-start; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .bubble {
+            padding: 14px 18px; border-radius: 22px; font-size: 14.5px; line-height: 1.5; position: relative;
+            backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .u-bubble { background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); border-bottom-right-radius: 4px; }
+        .a-bubble { background: var(--glass); border: 1px solid var(--glass-border); border-bottom-left-radius: 4px; }
+
+        .actions { display: flex; gap: 12px; margin-top: 5px; opacity: 0.4; transition: 0.3s; font-size: 11px; padding: 0 10px; }
+        .msg-box:hover .actions { opacity: 1; }
+        .act-btn { cursor: pointer; color: #fff; }
+        .act-btn:hover { color: var(--neon-blue); }
+
+        /* --- Input Area --- */
+        .input-area { padding: 15px 20px; background: transparent; }
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 100px; padding: 10px 15px; display: flex; align-items: center; gap: 12px;
+        }
+        textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 15px; resize: none; max-height: 100px; }
+        .circle { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; transition: 0.3s; }
+        .send-btn { background: #fff; color: #000; font-size: 1.1rem; }
+        .send-btn:hover { background: var(--neon-pink); color: #fff; transform: scale(1.05); }
+
+        /* --- Overlays --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(35px);
+            z-index: 1000; display: none; padding: 30px 20px; overflow-y: auto;
+        }
+        .overlay.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { background: var(--glass); padding: 22px; border-radius: 25px; border: 1px solid var(--glass-border); margin-bottom: 20px; }
+        input, textarea.f-ctrl {
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 14px;
+            border-radius: 12px; color: #fff; margin: 10px 0; outline: none;
+        }
+        .glow-btn {
+            width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800;
+            cursor: pointer; background: linear-gradient(to right, var(--neon-blue), var(--neon-pink)); color: #fff;
+        }
+
+        /* User Key Box */
+        .key-box { background: #000; border: 1px dashed var(--neon-blue); padding: 12px; text-align: center; color: var(--neon-blue); font-family: monospace; border-radius: 8px; margin: 10px 0; }
+
+        /* Help Steps */
+        .step { display: flex; gap: 15px; margin-bottom: 15px; font-size: 14px; }
+        .s-num { width: 25px; height: 25px; background: var(--neon-green); color: #000; border-radius: 50%; display: grid; place-items: center; font-weight: bold; flex-shrink: 0; }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+    </style>
+</head>
+<body onload="init()">
+
+    <div class="bg-gradient"></div>
+
+    <header>
+        <div class="logo-section">
+            <i class="fas fa-leaf leaf-icon" onclick="toggleOverlay('help-overlay')"></i>
+            <div class="brand">AI Thinking</div>
+        </div>
+        <div class="status-pill">
+            <div id="orb" class="core idle-core"></div>
+            <span id="status-txt" style="font-size: 9px; font-weight: 800; color: #777;">OFFLINE</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <i class="fas fa-folder-plus circle" style="background:transparent; color:#fff;" onclick="toggleOverlay('project-overlay')"></i>
+            <i class="fas fa-fingerprint circle" style="background:transparent; color:#fff;" onclick="toggleOverlay('config-overlay')"></i>
+        </div>
+    </header>
+
+    <div class="project-tabs" id="project-tabs"></div>
+
+    <main id="chat-window"></main>
+
+    <div class="input-area">
+        <div class="glass-pill">
+            <input type="color" id="u-color" value="#00d4ff" style="width:20px; height:20px; border:none; background:none; cursor:pointer;">
+            <i class="fas fa-microphone" id="mic-btn" onclick="startVoice()" style="color:#777; cursor:pointer;"></i>
+            <textarea id="u-input" placeholder="Think out loud..." rows="1"></textarea>
+            <button class="circle send-btn" onclick="handleSend()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Help Guide -->
+    <div class="overlay" id="help-overlay">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:30px;">
+            <h2 style="color:var(--neon-green)">🌿 User Guide</h2>
+            <i class="fas fa-times circle" onclick="closeAll()"></i>
+        </div>
+        <div class="card">
+            <div class="step"><div class="s-num">1</div><p>Click the <b>Fingerprint</b> icon and enter your OpenRouter API Key.</p></div>
+            <div class="step"><div class="s-num">2</div><p>Use the <b>(+)</b> icon to create projects (e.g., Teacher, Assistant).</p></div>
+            <div class="step"><div class="s-num">3</div><p>AI will automatically learn your style and save it in the project's brain.</p></div>
+            <div class="step"><div class="s-num">4</div><p>Hover over messages to Copy or Delete them.</p></div>
+        </div>
+        <button class="glow-btn" style="background:var(--neon-green); color:#000;" onclick="closeAll()">START NOW</button>
+    </div>
+
+    <!-- Project Hub -->
+    <div class="overlay" id="project-overlay">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:30px;">
+            <h2>Project Hub</h2>
+            <i class="fas fa-times circle" onclick="closeAll()"></i>
+        </div>
+        <div class="card">
+            <h3>New Smart Project</h3>
+            <input type="text" id="p-name" placeholder="Project Title">
+            <input type="text" id="p-persona" placeholder="AI Persona (e.g. Friendly Teacher)">
+            <textarea class="f-ctrl" id="p-rules" placeholder="Initial Rules/Instructions..." rows="2"></textarea>
+            <button class="glow-btn" onclick="createProject()">CREATE & LAUNCH</button>
+        </div>
+        <div id="p-list-render"></div>
+    </div>
+
+    <!-- Configuration -->
+    <div class="overlay" id="config-overlay">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:30px;">
+            <h2>Identity & API</h2>
+            <i class="fas fa-times circle" onclick="closeAll()"></i>
+        </div>
+        <div class="card">
+            <h4 style="color:var(--neon-blue)">Personal Identity Key</h4>
+            <div class="key-box" id="key-display">AIT-XXXXXX</div>
+            <button class="glow-btn" style="background:#222; font-size:11px;" onclick="regenKey()">REGENERATE IDENTITY</button>
+        </div>
+        <div class="card">
+            <h4 style="color:var(--neon-pink)">API Settings</h4>
+            <input type="password" id="api-key" placeholder="OpenRouter Key (sk-or-...)">
+            <input type="text" id="model-id" value="google/gemini-2.0-flash-exp:free">
+            <button class="glow-btn" onclick="saveConfig()">SAVE CONFIG</button>
+        </div>
+        <button class="glow-btn" style="background:#ff0000; margin-top:40px;" onclick="localStorage.clear(); location.reload();">RESET ALL DATA</button>
+    </div>
+
+    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <script>
+        // --- Database & Storage ---
+        let db = JSON.parse(localStorage.getItem('ai_think_final')) || {
+            apiKey: '',
+            userKey: 'AIT-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            model: 'google/gemini-2.0-flash-exp:free',
+            activeId: 'p1',
+            projects: {
+                'p1': { name: 'Universal', persona: 'Helpful assistant', rules: 'Be smart', memory: '', messages: [] }
+            }
+        };
+
+        const recognition = window.webkitSpeechRecognition ? new webkitSpeechRecognition() : null;
+
+        function init() {
+            renderTabs();
+            renderMessages();
+            updateStatus();
+            document.getElementById('key-display').innerText = db.userKey;
+            setupInput();
+        }
+
+        function save() { localStorage.setItem('ai_think_final', JSON.stringify(db)); }
+
+        // --- UI Rendering ---
+        function renderTabs() {
+            const tabs = document.getElementById('project-tabs');
+            tabs.innerHTML = '';
+            for (let id in db.projects) {
+                const t = document.createElement('div');
+                t.className = `tab ${db.activeId === id ? 'active' : ''}`;
+                t.innerText = db.projects[id].name;
+                t.onclick = () => { db.activeId = id; save(); init(); };
+                tabs.appendChild(t);
+            }
+        }
+
+        function renderMessages() {
+            const win = document.getElementById('chat-window');
+            win.innerHTML = '';
+            db.projects[db.activeId].messages.forEach((m, i) => {
+                const box = document.createElement('div');
+                box.className = `msg-box ${m.role === 'user' ? 'u-align' : 'a-align'}`;
+                box.innerHTML = `
+                    <div class="bubble ${m.role === 'user' ? 'u-bubble' : 'a-bubble'}" 
+                         style="${m.role === 'user' ? 'background:'+m.color : ''}">
+                        ${m.content}
+                    </div>
+                    <div class="actions">
+                        <span class="act-btn" onclick="copyMsg(${i})">Copy</span>
+                        <span class="act-btn" onclick="deleteMsg(${i})">Delete</span>
+                    </div>
+                `;
+                win.appendChild(box);
+            });
+            win.scrollTop = win.scrollHeight;
+        }
+
+        // --- Core Functions ---
+        async function handleSend() {
+            const input = document.getElementById('u-input');
+            const text = input.value.trim();
+            const color = document.getElementById('u-color').value;
+            const project = db.projects[db.activeId];
+
+            if (!text) return;
+            project.messages.push({ role: 'user', content: text, color: color });
+            renderMessages();
+            input.value = '';
+
+            if (!db.apiKey) return;
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${db.apiKey}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "model": db.model,
+                        "messages": [
+                            { role: "system", content: `${project.persona}. Rules: ${project.rules}. Learned Memory: ${project.memory}` },
+                            ...project.messages.slice(-10).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+                        ]
+                    })
+                });
+                const data = await response.json();
+                const aiRes = data.choices[0].message.content;
+                project.messages.push({ role: 'ai', content: aiRes });
+                save();
+                renderMessages();
+                speak(aiRes);
+                autoTrain(text, aiRes);
+            } catch (e) { console.error("API Error", e); }
+        }
+
+        async function autoTrain(u, a) {
+            const project = db.projects[db.activeId];
+            try {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${db.apiKey}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "model": db.model,
+                        "messages": [
+                            { role: "system", content: "Summarize user preferences/facts from this chat into the existing memory list." },
+                            { role: "user", content: `Memory: ${project.memory}\nUser: ${u}\nAI: ${a}` }
+                        ]
+                    })
+                });
+                const data = await res.json();
+                project.memory = data.choices[0].message.content;
+                save();
+            } catch(e){}
+        }
+
+        // --- Project Control ---
+        function createProject() {
+            const name = document.getElementById('p-name').value;
+            if(!name) return;
+            const id = 'p' + Date.now();
+            db.projects[id] = { 
+                name, 
+                persona: document.getElementById('p-persona').value || 'Assistant', 
+                rules: document.getElementById('p-rules').value, memory: '', messages: [] 
+            };
+            db.activeId = id;
+            save(); closeAll(); init();
+        }
+
+        function deleteProject(id) {
+            if(Object.keys(db.projects).length <= 1) return;
+            if(confirm("Delete Project?")){
+                delete db.projects[id];
+                db.activeId = Object.keys(db.projects)[0];
+                save(); renderPList(); init();
+            }
+        }
+
+        function renderPList() {
+            const list = document.getElementById('p-list-render');
+            list.innerHTML = '<h3 style="margin-bottom:15px;">My Projects</h3>';
+            for (let id in db.projects) {
+                list.innerHTML += `
+                    <div class="card" style="display:flex; justify-content:space-between; padding:15px;">
+                        <strong>${db.projects[id].name}</strong>
+                        <i class="fas fa-trash" style="color:var(--neon-pink); cursor:pointer;" onclick="deleteProject('${id}')"></i>
+                    </div>
+                `;
+            }
+        }
+
+        // --- Helpers ---
+        function updateStatus() {
+            const orb = document.getElementById('orb');
+            const txt = document.getElementById('status-txt');
+            if(db.apiKey) {
+                orb.className = 'core active-core';
+                txt.innerText = "SYSTEM ACTIVE";
+                document.getElementById('snd-click').play().catch(()=>{});
+            } else {
+                orb.className = 'core idle-core';
+                txt.innerText = "OFFLINE";
+            }
+        }
+
+        function copyMsg(i) {
+            navigator.clipboard.writeText(db.projects[db.activeId].messages[i].content);
+            alert("Copied!");
+        }
+
+        function deleteMsg(i) {
+            db.projects[db.activeId].messages.splice(i, 1);
+            save(); renderMessages();
+        }
+
+        function startVoice() {
+            if(!recognition) return alert("Browser not supported");
+            recognition.start();
+            document.getElementById('mic-btn').style.color = 'var(--neon-pink)';
+            recognition.onresult = (e) => {
+                document.getElementById('u-input').value = e.results[0][0].transcript;
+                document.getElementById('mic-icon').style.color = '#777';
+                handleSend();
+            }
+        }
+
+        function speak(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
+        function toggleOverlay(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if(id === 'project-overlay') renderPList();
+            if(id === 'config-overlay') {
+                document.getElementById('api-key').value = db.apiKey;
+                document.getElementById('model-id').value = db.model;
+            }
+        }
+        function closeAll() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
+        function saveConfig() {
+            db.apiKey = document.getElementById('api-key').value;
+            db.model = document.getElementById('model-id').value;
+            save(); updateStatus(); closeAll();
+        }
+        function regenKey() {
+            db.userKey = 'AIT-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            document.getElementById('key-display').innerText = db.userKey;
+            save();
+        }
+        function setupInput() {
+            const tx = document.getElementById('u-input');
+            tx.addEventListener("input", function() { this.style.height = "auto"; this.style.height = (this.scrollHeight) + "px"; });
+        }
+    </script>
+</body>
+</html>
