@@ -228,6 +228,37 @@
             filter: drop-shadow(0 0 15px var(--neon-green));
         }
 
+        /* Global Speaker Control */
+        .global-speaker-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--glass);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .global-speaker-control:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--neon-blue);
+        }
+        
+        .global-speaker-control.active {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+        
+        .global-speaker-control.active i {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
         /* --- Project Tabs --- */
         .tabs { 
             padding: 15px; 
@@ -346,6 +377,9 @@
         }
         
         .tool-btn.speak-btn:hover { color: var(--neon-green); }
+        .tool-btn.speak-btn.active { color: var(--neon-green); }
+        .tool-btn.speak-btn.active i { text-shadow: 0 0 8px var(--neon-green); }
+        .tool-btn.speak-btn.muted { color: var(--neon-red); }
         .tool-btn.delete-btn:hover { color: var(--neon-red); }
 
         /* Thinking Indicator in Chat */
@@ -779,6 +813,11 @@
             .guide-step {
                 gap: 15px;
             }
+            
+            .global-speaker-control {
+                font-size: 10px;
+                padding: 5px 8px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -805,6 +844,11 @@
             
             .msg-wrap {
                 max-width: 100%;
+            }
+            
+            .bubble-tools {
+                flex-wrap: wrap;
+                gap: 10px;
             }
         }
 
@@ -854,6 +898,18 @@
             0%, 100% { transform: scaleY(1); }
             50% { transform: scaleY(1.5); }
         }
+        
+        /* Speaker Status Animation */
+        .speaker-active {
+            color: var(--neon-green) !important;
+            text-shadow: 0 0 8px var(--neon-green);
+            animation: pulse-speaker 1.5s infinite;
+        }
+        
+        @keyframes pulse-speaker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
     </style>
 </head>
 <body onload="init()">
@@ -881,6 +937,12 @@
             <div id="response-light" class="reactor-box" style="display: none;">
                 <div class="reactor-core" style="background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue);"></div>
                 <span class="status-text" style="color: var(--neon-blue);">RESPONDING</span>
+            </div>
+            
+            <!-- Global Speaker Control -->
+            <div class="global-speaker-control" id="global-speaker-control" onclick="toggleGlobalSpeaker()">
+                <i class="fas fa-volume-up"></i>
+                <span>Speaker: ON</span>
             </div>
         </div>
         
@@ -951,7 +1013,7 @@
                     <div class="step-num">4</div>
                     <div class="step-content">
                         <h3>Voice & Actions</h3>
-                        <p>Use the Mic to speak. Click the speaker icon on AI messages to hear responses. Hover over messages for Copy or Delete options.</p>
+                        <p>Use the Mic to speak. Click the speaker icon on AI messages to hear responses. Click again to stop. Global speaker control in header.</p>
                     </div>
                 </div>
             </div>
@@ -1014,23 +1076,19 @@
                 <input type="text" id="model-id" value="google/gemini-2.0-flash-exp:free">
                 
                 <div style="margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
-                    <h4 style="color: var(--neon-green); margin-bottom: 10px;">Status Monitor</h4>
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <h4 style="color: var(--neon-green); margin-bottom: 10px;">Voice Settings</h4>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
                         <div>
-                            <span class="status-light" style="background: var(--neon-green);"></span>
-                            <span>Online</span>
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="auto-speak" checked>
+                                <span>Auto-speak AI responses</span>
+                            </label>
                         </div>
                         <div>
-                            <span class="status-light" style="background: var(--neon-yellow);"></span>
-                            <span>Slow</span>
-                        </div>
-                        <div>
-                            <span class="status-light" style="background: var(--neon-red);"></span>
-                            <span>Offline</span>
-                        </div>
-                        <div>
-                            <span class="status-light" style="background: var(--neon-blue);"></span>
-                            <span>Thinking</span>
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="mute-all" onclick="toggleMuteAll()">
+                                <span>Mute all speakers</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -1061,6 +1119,8 @@
             userKey: 'AIT-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
             model: 'google/gemini-2.0-flash-exp:free',
             activeId: 'p1',
+            speakerEnabled: true,
+            autoSpeak: true,
             projects: {
                 'p1': { 
                     name: 'Universal Brain', 
@@ -1082,9 +1142,16 @@
             recognition.lang = 'en-US';
         }
 
-        // Global Variables
+        // Global Variables for Speaker Control
         let isThinking = false;
         let apiResponseTime = 0;
+        let currentSpeech = {
+            utterance: null,
+            speakingIndex: null,
+            isSpeaking: false
+        };
+        let speechQueue = [];
+        let isSpeechMuted = false;
 
         // Initialize App
         function init() {
@@ -1094,13 +1161,21 @@
             document.getElementById('user-key-display').innerText = db.userKey;
             setupInput();
             
-            // Update footer status
-            updateFooterStatus();
+            // Initialize global speaker control
+            updateGlobalSpeakerControl();
             
             // Load API key if exists
             if (db.apiKey) {
                 document.getElementById('api-key').value = db.apiKey;
             }
+            
+            // Load voice settings
+            if (db.autoSpeak !== undefined) {
+                document.getElementById('auto-speak').checked = db.autoSpeak;
+            }
+            
+            // Update footer status
+            updateFooterStatus();
         }
 
         function save() { 
@@ -1177,6 +1252,51 @@
             updateFooterStatus();
         }
 
+        // --- Global Speaker Control ---
+        function toggleGlobalSpeaker() {
+            db.speakerEnabled = !db.speakerEnabled;
+            save();
+            updateGlobalSpeakerControl();
+            
+            // If turning off, stop any current speech
+            if (!db.speakerEnabled && currentSpeech.isSpeaking) {
+                stopAllSpeech();
+            }
+            
+            // Play feedback sound
+            playSound('beep');
+            
+            // Show notification
+            showNotification(`Speaker ${db.speakerEnabled ? 'ON' : 'OFF'}`);
+        }
+
+        function updateGlobalSpeakerControl() {
+            const control = document.getElementById('global-speaker-control');
+            const icon = control.querySelector('i');
+            const text = control.querySelector('span');
+            
+            if (db.speakerEnabled) {
+                control.classList.add('active');
+                icon.className = 'fas fa-volume-up';
+                text.textContent = 'Speaker: ON';
+            } else {
+                control.classList.remove('active');
+                icon.className = 'fas fa-volume-mute';
+                text.textContent = 'Speaker: OFF';
+            }
+        }
+
+        function toggleMuteAll() {
+            const muteCheckbox = document.getElementById('mute-all');
+            isSpeechMuted = muteCheckbox.checked;
+            
+            if (isSpeechMuted && currentSpeech.isSpeaking) {
+                stopAllSpeech();
+            }
+            
+            showNotification(isSpeechMuted ? 'All speakers muted' : 'Speakers unmuted');
+        }
+
         // --- Core Logic ---
         function renderTabs() {
             const tabs = document.getElementById('project-tabs');
@@ -1208,7 +1328,7 @@
                         <h3 style="color: var(--neon-blue); margin-bottom: 10px;">🤖 Welcome to AI Thinking Hub!</h3>
                         <p>I'm your AI assistant. Start by typing a message or use voice input.</p>
                         <p style="margin-top: 10px; font-size: 14px; color: #aaa;">
-                            <i class="fas fa-lightbulb"></i> Tip: Setup your API key in settings to activate full AI capabilities.
+                            <i class="fas fa-lightbulb"></i> Tip: Click the speaker icon to hear responses. Click again to stop.
                         </p>
                     </div>
                 `;
@@ -1225,14 +1345,29 @@
                     bubbleStyle = `background: linear-gradient(135deg, ${m.color}, ${adjustColor(m.color, -30)});`;
                 }
                 
+                // Determine speaker button state
+                let speakerBtnClass = 'speak-btn';
+                let speakerIcon = 'fa-volume-up';
+                let speakerText = 'Speak';
+                
+                if (currentSpeech.speakingIndex === idx && currentSpeech.isSpeaking) {
+                    speakerBtnClass += ' active';
+                    speakerIcon = 'fa-stop';
+                    speakerText = 'Stop';
+                } else if (m.speakerMuted || isSpeechMuted) {
+                    speakerBtnClass += ' muted';
+                    speakerIcon = 'fa-volume-mute';
+                    speakerText = 'Muted';
+                }
+                
                 wrap.innerHTML = `
                     <div class="bubble ${m.role === 'user' ? 'u-bubble' : 'a-bubble'}" style="${bubbleStyle}">
                         ${m.content}
                     </div>
                     <div class="bubble-tools">
                         ${m.role === 'ai' ? 
-                            `<span class="tool-btn speak-btn" onclick="speakMessage(${idx})">
-                                <i class="fas fa-volume-up"></i> Speak
+                            `<span class="tool-btn ${speakerBtnClass}" onclick="toggleMessageSpeech(${idx})">
+                                <i class="fas ${speakerIcon}"></i> ${speakerText}
                             </span>` : ''
                         }
                         <span class="tool-btn" onclick="copyText(${idx})">
@@ -1338,6 +1473,13 @@
                 save();
                 renderMessages();
                 
+                // Auto-speak if enabled
+                if (db.speakerEnabled && db.autoSpeak && !isSpeechMuted) {
+                    // Add to speech queue
+                    const msgIndex = project.messages.length - 1;
+                    speakMessage(msgIndex);
+                }
+                
                 // Auto-learn from interaction
                 autoTrain(text, aiText);
                 
@@ -1400,6 +1542,162 @@
             document.getElementById('response-light').style.display = 'none';
         }
 
+        // --- Enhanced Speech Functions ---
+        function toggleMessageSpeech(idx) {
+            // If this message is currently speaking, stop it
+            if (currentSpeech.speakingIndex === idx && currentSpeech.isSpeaking) {
+                stopSpeech();
+                return;
+            }
+            
+            // If another message is speaking, stop it first
+            if (currentSpeech.isSpeaking) {
+                stopSpeech();
+            }
+            
+            // Start speaking this message
+            speakMessage(idx);
+        }
+
+        function speakMessage(idx) {
+            // Check if speaker is enabled
+            if (!db.speakerEnabled || isSpeechMuted) {
+                showNotification('Speaker is disabled or muted');
+                return;
+            }
+            
+            const text = db.projects[db.activeId].messages[idx].content;
+            
+            // Stop any current speech
+            if (currentSpeech.isSpeaking) {
+                stopSpeech();
+            }
+            
+            // Create new utterance
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Set current speech state
+            currentSpeech.utterance = utterance;
+            currentSpeech.speakingIndex = idx;
+            currentSpeech.isSpeaking = true;
+            
+            // Update UI
+            renderMessages();
+            
+            // Play start sound
+            playSound('speech');
+            
+            // Speak the text
+            utterance.onstart = function() {
+                showNotification(`Speaking message ${idx + 1}`);
+            };
+            
+            utterance.onend = function() {
+                currentSpeech.speakingIndex = null;
+                currentSpeech.isSpeaking = false;
+                currentSpeech.utterance = null;
+                renderMessages();
+            };
+            
+            utterance.onerror = function(event) {
+                console.error('Speech synthesis error:', event);
+                currentSpeech.speakingIndex = null;
+                currentSpeech.isSpeaking = false;
+                currentSpeech.utterance = null;
+                renderMessages();
+                showNotification('Speech error occurred');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            if (currentSpeech.isSpeaking && currentSpeech.utterance) {
+                window.speechSynthesis.cancel();
+                currentSpeech.speakingIndex = null;
+                currentSpeech.isSpeaking = false;
+                currentSpeech.utterance = null;
+                renderMessages();
+                showNotification('Speech stopped');
+            }
+        }
+
+        function stopAllSpeech() {
+            window.speechSynthesis.cancel();
+            currentSpeech.speakingIndex = null;
+            currentSpeech.isSpeaking = false;
+            currentSpeech.utterance = null;
+            speechQueue = [];
+            renderMessages();
+        }
+
+        function playSound(type) {
+            if (!db.speakerEnabled || isSpeechMuted) return;
+            
+            const audio = document.getElementById(`snd-${type}`);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+            }
+        }
+
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                border: 1px solid var(--neon-blue);
+                border-radius: 10px;
+                padding: 15px 20px;
+                color: var(--neon-blue);
+                font-size: 14px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+                box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-volume-up"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Add CSS for notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
         // Auto-learning Function
         async function autoTrain(userMsg, aiMsg) {
             const project = db.projects[db.activeId];
@@ -1449,7 +1747,7 @@
             }
         }
 
-        // --- Voice Functions ---
+        // --- Voice Input Functions ---
         function startSpeech() {
             if (!recognition) {
                 alert('Speech recognition not supported in this browser.');
@@ -1481,30 +1779,6 @@
                 micBtn.classList.remove('listening');
                 micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
             };
-        }
-
-        function speakMessage(idx) {
-            const text = db.projects[db.activeId].messages[idx].content;
-            speak(text);
-        }
-
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-                
-                // Play sound effect
-                const audio = document.getElementById('snd-speech');
-                audio.currentTime = 0;
-                audio.play().catch(() => {});
-                
-                // Speak the text
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert('Text-to-speech not supported in this browser.');
-            }
         }
 
         // --- Project Management ---
@@ -1667,9 +1941,11 @@
         function saveSettings() {
             const apiKey = document.getElementById('api-key').value.trim();
             const model = document.getElementById('model-id').value.trim();
+            const autoSpeak = document.getElementById('auto-speak').checked;
             
             db.apiKey = apiKey;
             db.model = model || 'google/gemini-2.0-flash-exp:free';
+            db.autoSpeak = autoSpeak;
             
             save(); 
             checkApiStatus(); 
@@ -1691,6 +1967,13 @@
 
         // Initialize on load
         window.onload = init;
+        
+        // Clean up speech synthesis on page unload
+        window.addEventListener('beforeunload', function() {
+            if (currentSpeech.isSpeaking) {
+                window.speechSynthesis.cancel();
+            }
+        });
     </script>
 </body>
 </html>
