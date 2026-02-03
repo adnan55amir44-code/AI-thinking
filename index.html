@@ -3,439 +3,1694 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Thinking | Final Stable Edition</title>
+    <title>AI Thinking | Ultimate Neural Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-pink: #ff007a;
             --neon-blue: #00d4ff;
             --neon-green: #39ff14;
             --neon-purple: #9d00ff;
+            --neon-yellow: #ffcc00;
+            --neon-red: #ff0033;
+            --neon-orange: #ff7700;
             --bg-black: #020205;
+            --bg-dark: #0a0a10;
             --glass: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-heavy: rgba(255, 255, 255, 0.03);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Outfit', sans-serif; 
+        }
 
         body {
             background: var(--bg-black);
             color: #fff;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-x: hidden;
             position: relative;
+            font-size: 16px;
         }
 
-        /* Animated Mesh Background */
-        .bg-gradient {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+        /* Animated Mesh Gradient Background */
+        .bg-animate {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
             background: 
-                radial-gradient(circle at 15% 15%, rgba(255, 0, 122, 0.1) 0%, transparent 35%),
-                radial-gradient(circle at 85% 85%, rgba(0, 212, 255, 0.1) 0%, transparent 35%);
-            z-index: -1;
-            animation: moveBg 10s ease infinite alternate;
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 122, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(157, 0, 255, 0.15) 0%, transparent 50%),
+                linear-gradient(180deg, rgba(2,2,5,0.9) 0%, rgba(2,2,5,0.7) 100%);
+            z-index: -2;
+            animation: moveBg 20s infinite alternate ease-in-out;
         }
-        @keyframes moveBg { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        @keyframes moveBg { 
+            0% { transform: scale(1) rotate(0deg); } 
+            33% { transform: scale(1.05) rotate(1deg); }
+            66% { transform: scale(1.03) rotate(-1deg); }
+            100% { transform: scale(1.1) rotate(0deg); } 
+        }
+
+        /* Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            opacity: 0.3;
+        }
 
         /* --- Header --- */
         header {
-            padding: 15px 20px;
+            padding: 15px 25px;
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(25px);
+            backdrop-filter: blur(30px);
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--glass-border);
             z-index: 100;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .logo-section { display: flex; align-items: center; gap: 12px; }
-        .brand { font-size: 1.3rem; font-weight: 800; background: linear-gradient(to right, var(--neon-blue), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-area { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
         
-        .leaf-icon { color: var(--neon-green); font-size: 1.3rem; cursor: pointer; filter: drop-shadow(0 0 5px var(--neon-green)); transition: 0.3s; }
-        .leaf-icon:hover { transform: rotate(20deg) scale(1.2); }
-
-        /* Reactor Core Status */
-        .status-pill {
-            display: flex; align-items: center; gap: 8px; background: var(--glass);
-            padding: 5px 12px; border-radius: 50px; border: 1px solid var(--glass-border);
+        .brand { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            letter-spacing: 1px;
+            text-shadow: 0 0 20px rgba(255, 0, 122, 0.5);
         }
-        .core { width: 10px; height: 10px; border-radius: 50%; }
-        .active-core { background: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); animation: pulse 1.5s infinite; }
-        .idle-core { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); animation: jitter 0.2s infinite; }
 
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes jitter { 0% { transform: translate(0); } 50% { transform: translate(1px, -1px); } 100% { transform: translate(0); } }
+        /* Status System */
+        .status-system {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .reactor-box {
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            background: var(--glass);
+            padding: 8px 16px; 
+            border-radius: 50px; 
+            border: 1px solid var(--glass-border);
+            min-width: 150px;
+        }
+        
+        .reactor-core { 
+            width: 14px; 
+            height: 14px; 
+            border-radius: 50%; 
+            transition: all 0.5s ease;
+        }
+        
+        /* Status States */
+        .status-online { 
+            background: var(--neon-green); 
+            box-shadow: 0 0 25px var(--neon-green); 
+            animation: pulse-green 1.5s infinite; 
+        }
+        
+        .status-offline { 
+            background: var(--neon-red); 
+            box-shadow: 0 0 15px var(--neon-red); 
+        }
+        
+        .status-slow { 
+            background: var(--neon-yellow); 
+            box-shadow: 0 0 20px var(--neon-yellow); 
+            animation: pulse-yellow 1.2s infinite; 
+        }
+        
+        .status-thinking { 
+            background: var(--neon-blue); 
+            box-shadow: 0 0 25px var(--neon-blue); 
+            animation: thinking-pulse 0.8s infinite alternate; 
+        }
+
+        @keyframes pulse-green { 
+            0% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(1.4); opacity: 0.7; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+        
+        @keyframes pulse-yellow { 
+            0% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(1.3); opacity: 0.6; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+        
+        @keyframes thinking-pulse { 
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-blue); } 
+            100% { transform: scale(1.2); box-shadow: 0 0 30px var(--neon-blue); } 
+        }
+
+        .status-text {
+            font-size: 12px; 
+            font-weight: 800; 
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .status-online-text { color: var(--neon-green); }
+        .status-offline-text { color: var(--neon-red); }
+        .status-slow-text { color: var(--neon-yellow); }
+        .status-thinking-text { color: var(--neon-blue); }
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .circle-btn {
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: 1px solid var(--glass-border);
+            cursor: pointer; 
+            display: grid; 
+            place-items: center; 
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 1.1rem;
+        }
+        
+        .circle-btn:hover {
+            transform: scale(1.1);
+            background: var(--glass);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Leaf Icon */
+        .leaf-btn {
+            color: var(--neon-green);
+            font-size: 1.4rem;
+            cursor: pointer;
+            filter: drop-shadow(0 0 8px var(--neon-green));
+            transition: 0.3s;
+        }
+        
+        .leaf-btn:hover { 
+            transform: rotate(15deg) scale(1.2); 
+            filter: drop-shadow(0 0 15px var(--neon-green));
+        }
 
         /* --- Project Tabs --- */
-        .project-tabs {
-            padding: 10px; display: flex; gap: 10px; overflow-x: auto; background: rgba(0,0,0,0.2);
+        .tabs { 
+            padding: 15px; 
+            display: flex; 
+            gap: 12px; 
+            overflow-x: auto;
+            background: rgba(0,0,0,0.4);
             border-bottom: 1px solid var(--glass-border);
+            min-height: 70px;
+            align-items: center;
         }
-        .tab {
-            padding: 8px 18px; background: var(--glass); border: 1px solid var(--glass-border);
-            border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.3s;
+        
+        .tab-item {
+            padding: 10px 24px; 
+            background: var(--glass); 
+            border: 1px solid var(--glass-border);
+            border-radius: 20px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            transition: all 0.4s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .tab.active { background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); border: none; }
+        
+        .tab-item.active { 
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); 
+            border: none; 
+            box-shadow: 0 0 20px rgba(255,0,122,0.5); 
+            transform: translateY(-2px);
+        }
 
-        /* --- Chat Window --- */
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .msg-box { display: flex; flex-direction: column; max-width: 85%; animation: slideIn 0.4s ease; }
-        .u-align { align-self: flex-end; }
-        .a-align { align-self: flex-start; }
+        /* --- Chat Main --- */
+        #chat-window { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .msg-wrap { 
+            display: flex; 
+            flex-direction: column; 
+            max-width: 85%; 
+            animation: msgIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
+        }
+        
+        .u-wrap { align-self: flex-end; }
+        .a-wrap { align-self: flex-start; }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes msgIn { 
+            from { opacity: 0; transform: translateY(20px) scale(0.9); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
 
         .bubble {
-            padding: 14px 18px; border-radius: 22px; font-size: 14.5px; line-height: 1.5; position: relative;
-            backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            padding: 18px 22px; 
+            border-radius: 25px; 
+            font-size: 16px; 
+            line-height: 1.6; 
+            position: relative;
+            backdrop-filter: blur(10px); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
-        .u-bubble { background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); border-bottom-right-radius: 4px; }
-        .a-bubble { background: var(--glass); border: 1px solid var(--glass-border); border-bottom-left-radius: 4px; }
-
-        .actions { display: flex; gap: 12px; margin-top: 5px; opacity: 0.4; transition: 0.3s; font-size: 11px; padding: 0 10px; }
-        .msg-box:hover .actions { opacity: 1; }
-        .act-btn { cursor: pointer; color: #fff; }
-        .act-btn:hover { color: var(--neon-blue); }
-
-        /* --- Input Area --- */
-        .input-area { padding: 15px 20px; background: transparent; }
-        .glass-pill {
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 100px; padding: 10px 15px; display: flex; align-items: center; gap: 12px;
+        
+        .u-bubble { 
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); 
+            border-bottom-right-radius: 4px; 
+            color: #fff; 
         }
-        textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 15px; resize: none; max-height: 100px; }
-        .circle { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; transition: 0.3s; }
-        .send-btn { background: #fff; color: #000; font-size: 1.1rem; }
-        .send-btn:hover { background: var(--neon-pink); color: #fff; transform: scale(1.05); }
+        
+        .a-bubble { 
+            background: var(--glass); 
+            border: 1px solid var(--glass-border); 
+            border-bottom-left-radius: 4px; 
+            color: #e0e0e0; 
+        }
+
+        .bubble-tools {
+            display: flex; 
+            gap: 20px; 
+            margin-top: 8px; 
+            padding: 0 10px; 
+            opacity: 0.3; 
+            transition: 0.3s; 
+            font-size: 12px;
+            align-items: center;
+        }
+        
+        .msg-wrap:hover .bubble-tools { opacity: 1; }
+        
+        .tool-btn { 
+            cursor: pointer; 
+            color: #aaa; 
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .tool-btn:hover { 
+            color: var(--neon-blue); 
+            transform: translateY(-2px);
+        }
+        
+        .tool-btn.speak-btn:hover { color: var(--neon-green); }
+        .tool-btn.delete-btn:hover { color: var(--neon-red); }
+
+        /* Thinking Indicator in Chat */
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            margin-left: 10px;
+            color: var(--neon-blue);
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: 0s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        /* --- Floating Input --- */
+        .input-container { 
+            padding: 20px 25px; 
+            background: transparent; 
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .input-bar {
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(25px); 
+            border: 1px solid var(--glass-border);
+            border-radius: 100px; 
+            padding: 10px 15px 10px 25px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+            transition: all 0.3s;
+        }
+        
+        .input-bar:focus-within {
+            border-color: var(--neon-blue);
+            box-shadow: 0 15px 50px rgba(0, 212, 255, 0.2);
+        }
+        
+        textarea { 
+            flex: 1; 
+            background: transparent; 
+            border: none; 
+            outline: none; 
+            color: #fff; 
+            font-size: 16px; 
+            resize: none; 
+            max-height: 150px; 
+            line-height: 1.5;
+            font-family: 'Outfit', sans-serif;
+            padding: 10px 0;
+        }
+        
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .input-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .color-picker {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--glass-border);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .color-picker:hover {
+            transform: scale(1.1);
+            border-color: var(--neon-blue);
+        }
+        
+        .color-picker input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+        }
+        
+        .mic-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #aaa;
+            border: 1px solid transparent;
+        }
+        
+        .mic-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        
+        .mic-btn.listening {
+            background: rgba(255, 0, 51, 0.2);
+            color: var(--neon-red);
+            border-color: var(--neon-red);
+            animation: pulse-red 1s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 51, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 51, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 51, 0); }
+        }
+        
+        .send-btn { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%; 
+            border: none; 
+            cursor: pointer; 
+            display: grid; 
+            place-items: center; 
+            transition: all 0.3s; 
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            color: #fff;
+            font-size: 1.3rem;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .send-btn:hover { 
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 0, 122, 0.4);
+        }
 
         /* --- Overlays --- */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(35px);
-            z-index: 1000; display: none; padding: 30px 20px; overflow-y: auto;
+            position: fixed; 
+            inset: 0; 
+            background: rgba(2,2,5,0.98); 
+            backdrop-filter: blur(40px);
+            z-index: 1000; 
+            display: none; 
+            padding: 35px 25px; 
+            overflow-y: auto;
         }
-        .overlay.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .card { background: var(--glass); padding: 22px; border-radius: 25px; border: 1px solid var(--glass-border); margin-bottom: 20px; }
-        input, textarea.f-ctrl {
-            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 14px;
-            border-radius: 12px; color: #fff; margin: 10px 0; outline: none;
+        
+        .overlay.active { 
+            display: block; 
+            animation: fade 0.3s ease; 
         }
-        .glow-btn {
-            width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800;
-            cursor: pointer; background: linear-gradient(to right, var(--neon-blue), var(--neon-pink)); color: #fff;
+        
+        @keyframes fade { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
         }
 
-        /* User Key Box */
-        .key-box { background: #000; border: 1px dashed var(--neon-blue); padding: 12px; text-align: center; color: var(--neon-blue); font-family: monospace; border-radius: 8px; margin: 10px 0; }
+        .overlay-content {
+            max-width: 800px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* Help Steps */
-        .step { display: flex; gap: 15px; margin-bottom: 15px; font-size: 14px; }
-        .s-num { width: 25px; height: 25px; background: var(--neon-green); color: #000; border-radius: 50%; display: grid; place-items: center; font-weight: bold; flex-shrink: 0; }
+        .overlay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
 
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+        .overlay-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .neon-card {
+            background: var(--glass); 
+            padding: 30px; 
+            border-radius: 25px; 
+            border: 1px solid var(--glass-border); 
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        input, textarea.f-input {
+            width: 100%; 
+            background: rgba(0,0,0,0.5); 
+            border: 1px solid var(--glass-border); 
+            padding: 18px 20px;
+            border-radius: 15px; 
+            color: #fff; 
+            margin: 10px 0; 
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea.f-input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+        
+        .btn-glow {
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 15px; 
+            border: none; 
+            font-weight: 800; 
+            font-size: 1.1rem;
+            cursor: pointer; 
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink)); 
+            color: #fff; 
+            margin-top: 10px;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 0, 122, 0.3);
+        }
+
+        /* --- Guide Styles --- */
+        .guide-step { 
+            display: flex; 
+            gap: 20px; 
+            margin-bottom: 25px; 
+            align-items: flex-start; 
+        }
+        
+        .step-num { 
+            width: 40px; 
+            height: 40px; 
+            background: var(--neon-green); 
+            color: #000; 
+            border-radius: 50%; 
+            display: grid; 
+            place-items: center; 
+            font-weight: 900; 
+            flex-shrink: 0; 
+            font-size: 1.2rem;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content h3 {
+            color: var(--neon-green);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+
+        /* Personal API Display */
+        .user-id-box {
+            background: rgba(0, 0, 0, 0.5); 
+            border: 1px dashed var(--neon-blue); 
+            padding: 20px; 
+            border-radius: 12px;
+            text-align: center; 
+            font-family: 'JetBrains Mono', monospace; 
+            color: var(--neon-blue); 
+            font-size: 1.2rem; 
+            margin: 15px 0;
+            word-break: break-all;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        /* Project List */
+        .project-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s;
+        }
+        
+        .project-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+            border-color: var(--neon-blue);
+        }
+        
+        .project-info h3 {
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .project-info p {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .project-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Status Lights */
+        .status-light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            border-top: 1px solid var(--glass-border);
+            margin-top: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .status-system {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+            
+            .brand {
+                font-size: 1.5rem;
+            }
+            
+            .tabs {
+                padding: 12px 15px;
+                gap: 8px;
+            }
+            
+            .tab-item {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            #chat-window {
+                padding: 15px;
+                gap: 20px;
+            }
+            
+            .msg-wrap {
+                max-width: 95%;
+            }
+            
+            .bubble {
+                padding: 15px 18px;
+                font-size: 15px;
+            }
+            
+            .input-container {
+                padding: 15px;
+            }
+            
+            .input-bar {
+                padding: 8px 12px 8px 18px;
+            }
+            
+            .overlay {
+                padding: 25px 15px;
+            }
+            
+            .overlay-title {
+                font-size: 1.8rem;
+            }
+            
+            .neon-card {
+                padding: 20px;
+            }
+            
+            .step-num {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
+            .guide-step {
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .reactor-box {
+                min-width: 130px;
+            }
+            
+            .circle-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .send-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+            
+            .mic-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .msg-wrap {
+                max-width: 100%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track { 
+            background: rgba(0, 0, 0, 0.2); 
+            border-radius: 10px; 
+        }
+        
+        ::-webkit-scrollbar-thumb { 
+            background: var(--glass-border); 
+            border-radius: 10px; 
+        }
+        
+        ::-webkit-scrollbar-thumb:hover { 
+            background: var(--neon-blue); 
+        }
+
+        /* Voice Wave Animation */
+        .voice-wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 20px;
+        }
+        
+        .voice-wave span {
+            display: inline-block;
+            width: 3px;
+            border-radius: 3px;
+            background: var(--neon-red);
+            animation: voiceWave 1.2s infinite ease-in-out;
+        }
+        
+        .voice-wave span:nth-child(1) { height: 6px; animation-delay: 0s; }
+        .voice-wave span:nth-child(2) { height: 10px; animation-delay: 0.2s; }
+        .voice-wave span:nth-child(3) { height: 14px; animation-delay: 0.4s; }
+        .voice-wave span:nth-child(4) { height: 10px; animation-delay: 0.6s; }
+        .voice-wave span:nth-child(5) { height: 6px; animation-delay: 0.8s; }
+        
+        @keyframes voiceWave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.5); }
+        }
     </style>
 </head>
 <body onload="init()">
 
-    <div class="bg-gradient"></div>
+    <div class="bg-animate"></div>
+    <div class="grid-overlay"></div>
 
     <header>
-        <div class="logo-section">
-            <i class="fas fa-leaf leaf-icon" onclick="toggleOverlay('help-overlay')"></i>
+        <div class="logo-area">
+            <i class="fas fa-leaf leaf-btn" onclick="openOverlay('help-overlay')" title="How to use?"></i>
             <div class="brand">AI Thinking</div>
         </div>
-        <div class="status-pill">
-            <div id="orb" class="core idle-core"></div>
-            <span id="status-txt" style="font-size: 9px; font-weight: 800; color: #777;">OFFLINE</span>
+        
+        <div class="status-system">
+            <div class="reactor-box">
+                <div id="orb" class="reactor-core status-offline"></div>
+                <span id="status-label" class="status-text status-offline-text">OFFLINE</span>
+            </div>
+            
+            <div id="thinking-light" class="reactor-box" style="display: none;">
+                <div class="reactor-core status-thinking"></div>
+                <span class="status-text status-thinking-text">THINKING</span>
+            </div>
+            
+            <div id="response-light" class="reactor-box" style="display: none;">
+                <div class="reactor-core" style="background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue);"></div>
+                <span class="status-text" style="color: var(--neon-blue);">RESPONDING</span>
+            </div>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <i class="fas fa-folder-plus circle" style="background:transparent; color:#fff;" onclick="toggleOverlay('project-overlay')"></i>
-            <i class="fas fa-fingerprint circle" style="background:transparent; color:#fff;" onclick="toggleOverlay('config-overlay')"></i>
+        
+        <div class="header-controls">
+            <i class="fas fa-plus circle-btn" onclick="openOverlay('project-overlay')" title="New Project"></i>
+            <i class="fas fa-fingerprint circle-btn" onclick="openOverlay('settings-overlay')" title="Settings"></i>
         </div>
     </header>
 
-    <div class="project-tabs" id="project-tabs"></div>
+    <div class="tabs" id="project-tabs"></div>
 
     <main id="chat-window"></main>
 
-    <div class="input-area">
-        <div class="glass-pill">
-            <input type="color" id="u-color" value="#00d4ff" style="width:20px; height:20px; border:none; background:none; cursor:pointer;">
-            <i class="fas fa-microphone" id="mic-btn" onclick="startVoice()" style="color:#777; cursor:pointer;"></i>
-            <textarea id="u-input" placeholder="Think out loud..." rows="1"></textarea>
-            <button class="circle send-btn" onclick="handleSend()"><i class="fas fa-paper-plane"></i></button>
+    <div class="input-container">
+        <div class="input-bar">
+            <div class="color-picker">
+                <input type="color" id="user-color" value="#00d4ff" title="Choose your message color">
+            </div>
+            
+            <div class="mic-btn" id="mic-btn" onclick="startSpeech()" title="Voice Input">
+                <i class="fas fa-microphone"></i>
+            </div>
+            
+            <textarea id="user-input" placeholder="Start thinking..." rows="1"></textarea>
+            
+            <div class="input-controls">
+                <button class="send-btn" onclick="handleSend()" id="send-btn" title="Send Message">
+                    <i class="fas fa-bolt"></i>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Help Guide -->
+    <!-- Help Overlay -->
     <div class="overlay" id="help-overlay">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:30px;">
-            <h2 style="color:var(--neon-green)">🌿 User Guide</h2>
-            <i class="fas fa-times circle" onclick="closeAll()"></i>
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h1 class="overlay-title">🌿 GUIDE: HOW TO USE</h1>
+                <i class="fas fa-times circle-btn" onclick="closeAll()"></i>
+            </div>
+            
+            <div class="neon-card">
+                <div class="guide-step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h3>Setup API Key</h3>
+                        <p>Click the Fingerprint icon and paste your OpenRouter API Key. This activates the AI brain. Status lights will show connection state.</p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h3>Create Project</h3>
+                        <p>Click the (+) icon to create a project like "Home Teacher" or "Fitness Coach". Each project has its own memory and persona.</p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h3>Self-Learning</h3>
+                        <p>Just talk! The AI automatically learns your preferences and updates its internal brain for that project. Blue light shows when AI is thinking.</p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h3>Voice & Actions</h3>
+                        <p>Use the Mic to speak. Click the speaker icon on AI messages to hear responses. Hover over messages for Copy or Delete options.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-glow" style="background: var(--neon-green); color:#000;" onclick="closeAll()">
+                <i class="fas fa-check"></i> GOT IT!
+            </button>
         </div>
-        <div class="card">
-            <div class="step"><div class="s-num">1</div><p>Click the <b>Fingerprint</b> icon and enter your OpenRouter API Key.</p></div>
-            <div class="step"><div class="s-num">2</div><p>Use the <b>(+)</b> icon to create projects (e.g., Teacher, Assistant).</p></div>
-            <div class="step"><div class="s-num">3</div><p>AI will automatically learn your style and save it in the project's brain.</p></div>
-            <div class="step"><div class="s-num">4</div><p>Hover over messages to Copy or Delete them.</p></div>
-        </div>
-        <button class="glow-btn" style="background:var(--neon-green); color:#000;" onclick="closeAll()">START NOW</button>
     </div>
 
     <!-- Project Hub -->
     <div class="overlay" id="project-overlay">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:30px;">
-            <h2>Project Hub</h2>
-            <i class="fas fa-times circle" onclick="closeAll()"></i>
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h1 class="overlay-title">NEW PROJECT</h1>
+                <i class="fas fa-times circle-btn" onclick="closeAll()"></i>
+            </div>
+            
+            <div class="neon-card">
+                <input type="text" id="new-name" placeholder="Project Title (e.g. My Smart Assistant)">
+                <input type="text" id="new-persona" placeholder="Persona (Who should the AI be?)">
+                <textarea class="f-input" id="new-rules" placeholder="Core Instructions/Rules..." rows="3"></textarea>
+                <button class="btn-glow" onclick="addProject()">
+                    <i class="fas fa-rocket"></i> LAUNCH PROJECT
+                </button>
+            </div>
+            
+            <div id="project-list-render">
+                <h2 style="margin: 20px 0 15px; color: var(--neon-blue);">YOUR PROJECTS</h2>
+            </div>
         </div>
-        <div class="card">
-            <h3>New Smart Project</h3>
-            <input type="text" id="p-name" placeholder="Project Title">
-            <input type="text" id="p-persona" placeholder="AI Persona (e.g. Friendly Teacher)">
-            <textarea class="f-ctrl" id="p-rules" placeholder="Initial Rules/Instructions..." rows="2"></textarea>
-            <button class="glow-btn" onclick="createProject()">CREATE & LAUNCH</button>
-        </div>
-        <div id="p-list-render"></div>
     </div>
 
-    <!-- Configuration -->
-    <div class="overlay" id="config-overlay">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:30px;">
-            <h2>Identity & API</h2>
-            <i class="fas fa-times circle" onclick="closeAll()"></i>
+    <!-- Settings & Personal API -->
+    <div class="overlay" id="settings-overlay">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h1 class="overlay-title">IDENTITY & CONFIG</h1>
+                <i class="fas fa-times circle-btn" onclick="closeAll()"></i>
+            </div>
+            
+            <div class="neon-card">
+                <h3 style="color: var(--neon-blue); margin-bottom: 15px;">
+                    <i class="fas fa-user-circle"></i> Your Personal User Key
+                </h3>
+                <p style="font-size: 14px; color: #aaa; margin-bottom: 15px;">
+                    This key uniquely identifies you and your trained projects across all devices.
+                </p>
+                <div class="user-id-box" id="user-key-display">AIT-LOADING...</div>
+                <button class="btn-glow" style="background: #222; font-size: 14px;" onclick="generateNewUserKey()">
+                    <i class="fas fa-key"></i> GENERATE NEW UNIQUE KEY
+                </button>
+            </div>
+
+            <div class="neon-card">
+                <h3 style="color: var(--neon-pink); margin-bottom: 15px;">
+                    <i class="fas fa-cogs"></i> System API Settings
+                </h3>
+                <input type="password" id="api-key" placeholder="OpenRouter API Key (sk-or-...)" value="">
+                <input type="text" id="model-id" value="google/gemini-2.0-flash-exp:free">
+                
+                <div style="margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                    <h4 style="color: var(--neon-green); margin-bottom: 10px;">Status Monitor</h4>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <div>
+                            <span class="status-light" style="background: var(--neon-green);"></span>
+                            <span>Online</span>
+                        </div>
+                        <div>
+                            <span class="status-light" style="background: var(--neon-yellow);"></span>
+                            <span>Slow</span>
+                        </div>
+                        <div>
+                            <span class="status-light" style="background: var(--neon-red);"></span>
+                            <span>Offline</span>
+                        </div>
+                        <div>
+                            <span class="status-light" style="background: var(--neon-blue);"></span>
+                            <span>Thinking</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-glow" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> SAVE SYSTEM CONFIG
+                </button>
+            </div>
+            
+            <button class="btn-glow" style="background: linear-gradient(45deg, #ff0033, #ff6600); margin-top: 20px;" onclick="if(confirm('This will delete ALL data. Continue?')) { localStorage.clear(); location.reload(); }">
+                <i class="fas fa-bomb"></i> DESTROY ALL DATA
+            </button>
         </div>
-        <div class="card">
-            <h4 style="color:var(--neon-blue)">Personal Identity Key</h4>
-            <div class="key-box" id="key-display">AIT-XXXXXX</div>
-            <button class="glow-btn" style="background:#222; font-size:11px;" onclick="regenKey()">REGENERATE IDENTITY</button>
-        </div>
-        <div class="card">
-            <h4 style="color:var(--neon-pink)">API Settings</h4>
-            <input type="password" id="api-key" placeholder="OpenRouter Key (sk-or-...)">
-            <input type="text" id="model-id" value="google/gemini-2.0-flash-exp:free">
-            <button class="glow-btn" onclick="saveConfig()">SAVE CONFIG</button>
-        </div>
-        <button class="glow-btn" style="background:#ff0000; margin-top:40px;" onclick="localStorage.clear(); location.reload();">RESET ALL DATA</button>
     </div>
 
-    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <!-- Audio Elements -->
+    <audio id="snd-beep" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <audio id="snd-speech" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <footer>
+        <p>AI Thinking Hub v2.0 | Neural Interface Active | Status: <span id="footer-status">Loading...</span></p>
+    </footer>
 
     <script>
-        // --- Database & Storage ---
-        let db = JSON.parse(localStorage.getItem('ai_think_final')) || {
+        // Main Database
+        let db = JSON.parse(localStorage.getItem('ai_thinking_ultimate')) || {
             apiKey: '',
-            userKey: 'AIT-' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+            userKey: 'AIT-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
             model: 'google/gemini-2.0-flash-exp:free',
             activeId: 'p1',
             projects: {
-                'p1': { name: 'Universal', persona: 'Helpful assistant', rules: 'Be smart', memory: '', messages: [] }
+                'p1': { 
+                    name: 'Universal Brain', 
+                    persona: 'Helpful AI assistant', 
+                    rules: 'Be very smart and helpful', 
+                    memory: '', 
+                    messages: [],
+                    created: new Date().toISOString()
+                }
             }
         };
 
-        const recognition = window.webkitSpeechRecognition ? new webkitSpeechRecognition() : null;
+        // Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        if (recognition) {
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+        }
 
+        // Global Variables
+        let isThinking = false;
+        let apiResponseTime = 0;
+
+        // Initialize App
         function init() {
             renderTabs();
             renderMessages();
-            updateStatus();
-            document.getElementById('key-display').innerText = db.userKey;
+            checkApiStatus();
+            document.getElementById('user-key-display').innerText = db.userKey;
             setupInput();
+            
+            // Update footer status
+            updateFooterStatus();
+            
+            // Load API key if exists
+            if (db.apiKey) {
+                document.getElementById('api-key').value = db.apiKey;
+            }
         }
 
-        function save() { localStorage.setItem('ai_think_final', JSON.stringify(db)); }
+        function save() { 
+            localStorage.setItem('ai_thinking_ultimate', JSON.stringify(db)); 
+        }
 
-        // --- UI Rendering ---
+        // Update Footer Status
+        function updateFooterStatus() {
+            const footer = document.getElementById('footer-status');
+            if (db.apiKey) {
+                footer.innerHTML = `<span style="color: var(--neon-green);">● ONLINE</span>`;
+            } else {
+                footer.innerHTML = `<span style="color: var(--neon-red);">● OFFLINE</span>`;
+            }
+        }
+
+        // --- API Status Monitoring ---
+        async function checkApiStatus() {
+            const orb = document.getElementById('orb');
+            const label = document.getElementById('status-label');
+            
+            if (!db.apiKey) {
+                orb.className = 'reactor-core status-offline';
+                label.className = 'status-text status-offline-text';
+                label.innerText = "OFFLINE";
+                updateFooterStatus();
+                return;
+            }
+            
+            // Start timing
+            const startTime = Date.now();
+            
+            try {
+                // Simple test request
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { 
+                        "Authorization": `Bearer ${db.apiKey}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        "model": db.model,
+                        "messages": [{ role: "user", content: "test" }],
+                        "max_tokens": 5
+                    })
+                });
+                
+                apiResponseTime = Date.now() - startTime;
+                
+                if (response.ok) {
+                    if (apiResponseTime < 2000) {
+                        // Fast response
+                        orb.className = 'reactor-core status-online';
+                        label.className = 'status-text status-online-text';
+                        label.innerText = `READY (${apiResponseTime}ms)`;
+                    } else {
+                        // Slow response
+                        orb.className = 'reactor-core status-slow';
+                        label.className = 'status-text status-slow-text';
+                        label.innerText = `SLOW (${apiResponseTime}ms)`;
+                    }
+                } else {
+                    orb.className = 'reactor-core status-offline';
+                    label.className = 'status-text status-offline-text';
+                    label.innerText = "API ERROR";
+                }
+            } catch (error) {
+                orb.className = 'reactor-core status-offline';
+                label.className = 'status-text status-offline-text';
+                label.innerText = "OFFLINE";
+                apiResponseTime = 0;
+            }
+            
+            updateFooterStatus();
+        }
+
+        // --- Core Logic ---
         function renderTabs() {
             const tabs = document.getElementById('project-tabs');
             tabs.innerHTML = '';
+            
             for (let id in db.projects) {
-                const t = document.createElement('div');
-                t.className = `tab ${db.activeId === id ? 'active' : ''}`;
-                t.innerText = db.projects[id].name;
-                t.onclick = () => { db.activeId = id; save(); init(); };
-                tabs.appendChild(t);
+                const item = document.createElement('div');
+                item.className = `tab-item ${db.activeId === id ? 'active' : ''}`;
+                item.innerText = db.projects[id].name;
+                item.onclick = () => { 
+                    db.activeId = id; 
+                    save(); 
+                    init(); 
+                };
+                tabs.appendChild(item);
             }
         }
 
         function renderMessages() {
             const win = document.getElementById('chat-window');
             win.innerHTML = '';
-            db.projects[db.activeId].messages.forEach((m, i) => {
-                const box = document.createElement('div');
-                box.className = `msg-box ${m.role === 'user' ? 'u-align' : 'a-align'}`;
-                box.innerHTML = `
-                    <div class="bubble ${m.role === 'user' ? 'u-bubble' : 'a-bubble'}" 
-                         style="${m.role === 'user' ? 'background:'+m.color : ''}">
-                        ${m.content}
-                    </div>
-                    <div class="actions">
-                        <span class="act-btn" onclick="copyMsg(${i})">Copy</span>
-                        <span class="act-btn" onclick="deleteMsg(${i})">Delete</span>
+            
+            // Add welcome message if empty
+            if (db.projects[db.activeId].messages.length === 0) {
+                const welcomeWrap = document.createElement('div');
+                welcomeWrap.className = 'msg-wrap a-wrap';
+                welcomeWrap.innerHTML = `
+                    <div class="bubble a-bubble">
+                        <h3 style="color: var(--neon-blue); margin-bottom: 10px;">🤖 Welcome to AI Thinking Hub!</h3>
+                        <p>I'm your AI assistant. Start by typing a message or use voice input.</p>
+                        <p style="margin-top: 10px; font-size: 14px; color: #aaa;">
+                            <i class="fas fa-lightbulb"></i> Tip: Setup your API key in settings to activate full AI capabilities.
+                        </p>
                     </div>
                 `;
-                win.appendChild(box);
+                win.appendChild(welcomeWrap);
+            }
+            
+            // Render messages
+            db.projects[db.activeId].messages.forEach((m, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = `msg-wrap ${m.role === 'user' ? 'u-wrap' : 'a-wrap'}`;
+                
+                let bubbleStyle = '';
+                if (m.role === 'user' && m.color) {
+                    bubbleStyle = `background: linear-gradient(135deg, ${m.color}, ${adjustColor(m.color, -30)});`;
+                }
+                
+                wrap.innerHTML = `
+                    <div class="bubble ${m.role === 'user' ? 'u-bubble' : 'a-bubble'}" style="${bubbleStyle}">
+                        ${m.content}
+                    </div>
+                    <div class="bubble-tools">
+                        ${m.role === 'ai' ? 
+                            `<span class="tool-btn speak-btn" onclick="speakMessage(${idx})">
+                                <i class="fas fa-volume-up"></i> Speak
+                            </span>` : ''
+                        }
+                        <span class="tool-btn" onclick="copyText(${idx})">
+                            <i class="fas fa-copy"></i> Copy
+                        </span>
+                        <span class="tool-btn delete-btn" onclick="deleteMsg(${idx})">
+                            <i class="fas fa-trash"></i> Delete
+                        </span>
+                    </div>
+                `;
+                win.appendChild(wrap);
             });
+            
             win.scrollTop = win.scrollHeight;
         }
 
-        // --- Core Functions ---
+        // Helper to adjust color brightness
+        function adjustColor(color, amount) {
+            let usePound = false;
+            if (color[0] === "#") {
+                color = color.slice(1);
+                usePound = true;
+            }
+            const num = parseInt(color, 16);
+            let r = (num >> 16) + amount;
+            if (r > 255) r = 255;
+            else if (r < 0) r = 0;
+            
+            let b = ((num >> 8) & 0x00FF) + amount;
+            if (b > 255) b = 255;
+            else if (b < 0) b = 0;
+            
+            let g = (num & 0x0000FF) + amount;
+            if (g > 255) g = 255;
+            else if (g < 0) g = 0;
+            
+            return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+        }
+
+        // Main Send Function
         async function handleSend() {
-            const input = document.getElementById('u-input');
+            const input = document.getElementById('user-input');
             const text = input.value.trim();
-            const color = document.getElementById('u-color').value;
+            const color = document.getElementById('user-color').value;
             const project = db.projects[db.activeId];
 
             if (!text) return;
+            
+            // Add user message
             project.messages.push({ role: 'user', content: text, color: color });
             renderMessages();
             input.value = '';
-
-            if (!db.apiKey) return;
-
+            resetInputHeight();
+            
+            if (!db.apiKey) {
+                // Show offline warning
+                const offlineMsg = { role: 'ai', content: '⚠️ API key not configured. Please add your OpenRouter API key in settings to use AI features.' };
+                project.messages.push(offlineMsg);
+                renderMessages();
+                save();
+                return;
+            }
+            
+            // Show thinking indicator
+            showThinkingIndicator();
+            
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Authorization": `Bearer ${db.apiKey}`, "Content-Type": "application/json" },
+                    headers: { 
+                        "Authorization": `Bearer ${db.apiKey}`, 
+                        "Content-Type": "application/json" 
+                    },
                     body: JSON.stringify({
                         "model": db.model,
                         "messages": [
-                            { role: "system", content: `${project.persona}. Rules: ${project.rules}. Learned Memory: ${project.memory}` },
-                            ...project.messages.slice(-10).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+                            { 
+                                role: "system", 
+                                content: `You are: ${project.persona}. Rules: ${project.rules}. 
+                                Previous context/memory: ${project.memory}. 
+                                Respond naturally and helpfully.`
+                            },
+                            ...project.messages.slice(-12).map(m => ({
+                                role: m.role === 'user' ? 'user' : 'assistant', 
+                                content: m.content 
+                            }))
                         ]
                     })
                 });
+                
+                // Show response light
+                showResponseLight();
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
                 const data = await response.json();
-                const aiRes = data.choices[0].message.content;
-                project.messages.push({ role: 'ai', content: aiRes });
+                const aiText = data.choices[0].message.content;
+                
+                // Add AI response
+                project.messages.push({ role: 'ai', content: aiText });
                 save();
                 renderMessages();
-                speak(aiRes);
-                autoTrain(text, aiRes);
-            } catch (e) { console.error("API Error", e); }
-        }
-
-        async function autoTrain(u, a) {
-            const project = db.projects[db.activeId];
-            try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${db.apiKey}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        "model": db.model,
-                        "messages": [
-                            { role: "system", content: "Summarize user preferences/facts from this chat into the existing memory list." },
-                            { role: "user", content: `Memory: ${project.memory}\nUser: ${u}\nAI: ${a}` }
-                        ]
-                    })
-                });
-                const data = await res.json();
-                project.memory = data.choices[0].message.content;
+                
+                // Auto-learn from interaction
+                autoTrain(text, aiText);
+                
+                // Update API status
+                checkApiStatus();
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                const errorMsg = { 
+                    role: 'ai', 
+                    content: `❌ Error: ${error.message}. Please check your API key and network connection.` 
+                };
+                project.messages.push(errorMsg);
+                renderMessages();
                 save();
-            } catch(e){}
-        }
-
-        // --- Project Control ---
-        function createProject() {
-            const name = document.getElementById('p-name').value;
-            if(!name) return;
-            const id = 'p' + Date.now();
-            db.projects[id] = { 
-                name, 
-                persona: document.getElementById('p-persona').value || 'Assistant', 
-                rules: document.getElementById('p-rules').value, memory: '', messages: [] 
-            };
-            db.activeId = id;
-            save(); closeAll(); init();
-        }
-
-        function deleteProject(id) {
-            if(Object.keys(db.projects).length <= 1) return;
-            if(confirm("Delete Project?")){
-                delete db.projects[id];
-                db.activeId = Object.keys(db.projects)[0];
-                save(); renderPList(); init();
+            } finally {
+                // Hide indicators
+                hideThinkingIndicator();
+                hideResponseLight();
             }
         }
 
-        function renderPList() {
-            const list = document.getElementById('p-list-render');
-            list.innerHTML = '<h3 style="margin-bottom:15px;">My Projects</h3>';
+        // Thinking Indicator
+        function showThinkingIndicator() {
+            isThinking = true;
+            const indicator = document.getElementById('thinking-light');
+            indicator.style.display = 'flex';
+            
+            // Add thinking message to chat
+            const win = document.getElementById('chat-window');
+            const thinkingWrap = document.createElement('div');
+            thinkingWrap.className = 'msg-wrap a-wrap';
+            thinkingWrap.id = 'thinking-indicator';
+            thinkingWrap.innerHTML = `
+                <div class="bubble a-bubble">
+                    <div class="thinking-indicator">
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span>Thinking...</span>
+                    </div>
+                </div>
+            `;
+            win.appendChild(thinkingWrap);
+            win.scrollTop = win.scrollHeight;
+        }
+
+        function hideThinkingIndicator() {
+            isThinking = false;
+            document.getElementById('thinking-light').style.display = 'none';
+            const indicator = document.getElementById('thinking-indicator');
+            if (indicator) indicator.remove();
+        }
+
+        function showResponseLight() {
+            document.getElementById('response-light').style.display = 'flex';
+        }
+
+        function hideResponseLight() {
+            document.getElementById('response-light').style.display = 'none';
+        }
+
+        // Auto-learning Function
+        async function autoTrain(userMsg, aiMsg) {
+            const project = db.projects[db.activeId];
+            
+            // Only train if we have enough context
+            if (project.messages.length < 3) return;
+            
+            try {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { 
+                        "Authorization": `Bearer ${db.apiKey}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        "model": db.model,
+                        "messages": [
+                            { 
+                                role: "system", 
+                                content: "Extract 1-2 key learning points from this interaction to remember about the user. Keep it very concise, max 2 sentences." 
+                            },
+                            { 
+                                role: "user", 
+                                content: `Current memory: ${project.memory || 'None'}\n\nUser said: "${userMsg}"\nAI responded: "${aiMsg}"\n\nExtract key learning:`
+                            }
+                        ]
+                    })
+                });
+                
+                const data = await res.json();
+                const newMemory = data.choices[0].message.content;
+                
+                // Update memory (keep it concise)
+                if (!project.memory) {
+                    project.memory = newMemory;
+                } else {
+                    // Combine and limit memory size
+                    const combined = project.memory + ' ' + newMemory;
+                    // Limit to ~500 chars
+                    project.memory = combined.length > 500 ? 
+                        combined.substring(combined.length - 500) : combined;
+                }
+                
+                save();
+            } catch(e) {
+                console.log('Memory update skipped:', e);
+            }
+        }
+
+        // --- Voice Functions ---
+        function startSpeech() {
+            if (!recognition) {
+                alert('Speech recognition not supported in this browser.');
+                return;
+            }
+            
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('listening');
+            micBtn.innerHTML = '<div class="voice-wave"><span></span><span></span><span></span><span></span><span></span></div>';
+            
+            recognition.start();
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('user-input').value = transcript;
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                handleSend();
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                alert('Voice input failed: ' + event.error);
+            };
+            
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+        }
+
+        function speakMessage(idx) {
+            const text = db.projects[db.activeId].messages[idx].content;
+            speak(text);
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // Play sound effect
+                const audio = document.getElementById('snd-speech');
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+                
+                // Speak the text
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Text-to-speech not supported in this browser.');
+            }
+        }
+
+        // --- Project Management ---
+        function addProject() {
+            const name = document.getElementById('new-name').value.trim();
+            const persona = document.getElementById('new-persona').value.trim();
+            const rules = document.getElementById('new-rules').value.trim();
+            
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+            
+            const id = 'p' + Date.now();
+            db.projects[id] = { 
+                name, 
+                persona: persona || 'Helpful AI assistant',
+                rules: rules || 'Be helpful and informative',
+                memory: '', 
+                messages: [],
+                created: new Date().toISOString()
+            };
+            
+            db.activeId = id;
+            save(); 
+            closeAll(); 
+            init();
+            
+            // Clear form
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-persona').value = '';
+            document.getElementById('new-rules').value = '';
+        }
+
+        function deleteProject(id) {
+            if (Object.keys(db.projects).length <= 1) {
+                alert('You must have at least one project.');
+                return;
+            }
+            
+            if (confirm(`Delete project "${db.projects[id].name}"? This cannot be undone.`)) {
+                delete db.projects[id];
+                
+                // Switch to another project
+                const remainingIds = Object.keys(db.projects);
+                db.activeId = remainingIds[0];
+                
+                save(); 
+                renderProjectList(); 
+                renderTabs(); 
+                renderMessages();
+            }
+        }
+
+        function renderProjectList() {
+            const list = document.getElementById('project-list-render');
+            if (!list) return;
+            
+            list.innerHTML = '<h2 style="margin: 20px 0 15px; color: var(--neon-blue);">YOUR PROJECTS</h2>';
+            
             for (let id in db.projects) {
+                const proj = db.projects[id];
+                const date = new Date(proj.created).toLocaleDateString();
+                const isActive = db.activeId === id;
+                
                 list.innerHTML += `
-                    <div class="card" style="display:flex; justify-content:space-between; padding:15px;">
-                        <strong>${db.projects[id].name}</strong>
-                        <i class="fas fa-trash" style="color:var(--neon-pink); cursor:pointer;" onclick="deleteProject('${id}')"></i>
+                    <div class="project-card ${isActive ? 'active-project' : ''}" style="${isActive ? 'border-color: var(--neon-blue);' : ''}">
+                        <div class="project-info">
+                            <h3>${proj.name} ${isActive ? '<span style="color: var(--neon-blue); font-size: 12px;">(Active)</span>' : ''}</h3>
+                            <p>${proj.persona} • ${proj.messages.length} messages • Created ${date}</p>
+                        </div>
+                        <div class="project-actions">
+                            <button class="circle-btn" style="width: 40px; height: 40px; background: var(--neon-blue);" onclick="db.activeId='${id}'; save(); closeAll(); init();" title="Switch to this project">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="circle-btn" style="width: 40px; height: 40px; background: var(--neon-red);" onclick="deleteProject('${id}')" title="Delete project">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }
         }
 
-        // --- Helpers ---
-        function updateStatus() {
-            const orb = document.getElementById('orb');
-            const txt = document.getElementById('status-txt');
-            if(db.apiKey) {
-                orb.className = 'core active-core';
-                txt.innerText = "SYSTEM ACTIVE";
-                document.getElementById('snd-click').play().catch(()=>{});
-            } else {
-                orb.className = 'core idle-core';
-                txt.innerText = "OFFLINE";
+        // --- Utility Functions ---
+        function copyText(idx) {
+            const text = db.projects[db.activeId].messages[idx].content;
+            navigator.clipboard.writeText(text).then(() => {
+                // Show visual feedback
+                const toolBtn = event.target.closest('.tool-btn');
+                if (toolBtn) {
+                    const original = toolBtn.innerHTML;
+                    toolBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    toolBtn.style.color = 'var(--neon-green)';
+                    
+                    setTimeout(() => {
+                        toolBtn.innerHTML = original;
+                        toolBtn.style.color = '';
+                    }, 2000);
+                }
+            });
+        }
+
+        function deleteMsg(idx) {
+            if (confirm('Delete this message?')) {
+                db.projects[db.activeId].messages.splice(idx, 1);
+                save(); 
+                renderMessages();
             }
         }
 
-        function copyMsg(i) {
-            navigator.clipboard.writeText(db.projects[db.activeId].messages[i].content);
-            alert("Copied!");
-        }
-
-        function deleteMsg(i) {
-            db.projects[db.activeId].messages.splice(i, 1);
-            save(); renderMessages();
-        }
-
-        function startVoice() {
-            if(!recognition) return alert("Browser not supported");
-            recognition.start();
-            document.getElementById('mic-btn').style.color = 'var(--neon-pink)';
-            recognition.onresult = (e) => {
-                document.getElementById('u-input').value = e.results[0][0].transcript;
-                document.getElementById('mic-icon').style.color = '#777';
-                handleSend();
+        function generateNewUserKey() {
+            if (confirm("Create a new Personal User Key? Your old identity will be replaced.")) {
+                db.userKey = 'AIT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                document.getElementById('user-key-display').innerText = db.userKey;
+                save();
+                
+                // Show confirmation
+                alert(`New User Key Generated:\n${db.userKey}\n\nSave this key if you want to sync across devices.`);
             }
         }
 
-        function speak(t) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
-        function toggleOverlay(id) { 
-            document.getElementById(id).classList.add('active'); 
-            if(id === 'project-overlay') renderPList();
-            if(id === 'config-overlay') {
-                document.getElementById('api-key').value = db.apiKey;
-                document.getElementById('model-id').value = db.model;
-            }
-        }
-        function closeAll() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); }
-        function saveConfig() {
-            db.apiKey = document.getElementById('api-key').value;
-            db.model = document.getElementById('model-id').value;
-            save(); updateStatus(); closeAll();
-        }
-        function regenKey() {
-            db.userKey = 'AIT-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-            document.getElementById('key-display').innerText = db.userKey;
-            save();
-        }
+        // Input Auto-resize
         function setupInput() {
-            const tx = document.getElementById('u-input');
-            tx.addEventListener("input", function() { this.style.height = "auto"; this.style.height = (this.scrollHeight) + "px"; });
+            const tx = document.getElementById('user-input');
+            tx.addEventListener("input", function() {
+                this.style.height = "auto";
+                this.style.height = (this.scrollHeight) + "px";
+            });
+            
+            // Enter to send (Shift+Enter for new line)
+            tx.addEventListener("keydown", function(e) {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            });
         }
+
+        function resetInputHeight() {
+            const tx = document.getElementById('user-input');
+            tx.style.height = "auto";
+        }
+
+        // Overlay Functions
+        function openOverlay(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if (id === 'project-overlay') {
+                setTimeout(renderProjectList, 100);
+            }
+            if (id === 'settings-overlay' && db.apiKey) {
+                document.getElementById('api-key').value = db.apiKey;
+            }
+        }
+
+        function closeAll() { 
+            document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active')); 
+        }
+
+        function saveSettings() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            const model = document.getElementById('model-id').value.trim();
+            
+            db.apiKey = apiKey;
+            db.model = model || 'google/gemini-2.0-flash-exp:free';
+            
+            save(); 
+            checkApiStatus(); 
+            closeAll();
+            
+            // Show success message
+            if (apiKey) {
+                const beep = document.getElementById('snd-beep');
+                beep.currentTime = 0;
+                beep.play().catch(() => {});
+                
+                // Update UI
+                setTimeout(() => {
+                    alert('✅ Settings saved! AI system is now active.');
+                    location.reload();
+                }, 300);
+            }
+        }
+
+        // Initialize on load
+        window.onload = init;
     </script>
 </body>
 </html>
